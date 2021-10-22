@@ -145,7 +145,10 @@ def hybrid_greedy(timestamps, timestamp_dims, mark, iters, omega, v, n_dim, T, p
             _fn = _fn_endo_time + _fn_endo_mark
             incr_fn[j] = _fn - fn[to_dim]
         incr_fns += [incr_fn]
-        exo_idx = np.argmax(incr_fn[not_first_occurence_dim])
+        if skip_first:
+            exo_idx = np.argmax(incr_fn[not_first_occurence_dim])
+        else:
+            exo_idx = np.argmax(incr_fn)
         cur_endo_mask[exo_idx] = False
         exo_idxs += [exo_idx]
         if verbose:
