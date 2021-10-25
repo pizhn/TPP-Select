@@ -13,13 +13,7 @@ from statistics import mean
 
 if __name__ == '__main__':
     filenames = ['BookOrder', 'Club', 'Election', 'Series', 'Verdict']
-    # filenames = ['Series', 'Verdict']
-    # filenames = ['BookOrder', 'Election']
-    # filenames = ['Club']
-    # filenames = ['Verdict']
-    # stochastic_size = 20
-    stochastic_size = 100
-    iter = 50
+    n_iter = 50
 
     accus_ours = {}
     accus_facloc = {}
@@ -69,7 +63,7 @@ if __name__ == '__main__':
             real_exo_idxs = sort_idx[len(timestamps) - fake_num:]
 
             # Our method
-            pred_exo_idxs_ours, incr_fns = hybrid_greedy(timestamps, timestamp_dims, mark, iter, omega, v, n_dim, T,
+            pred_exo_idxs_ours, incr_fns = hybrid_greedy(timestamps, timestamp_dims, mark, n_iter, omega, v, n_dim, T,
                                                          penalty_time, penalty_mark, edge, sentiments,
                                                          stochastic_size=stochastic_size, verbose=True,
                                                          return_all=True, skip_first=skip_first)
@@ -80,23 +74,23 @@ if __name__ == '__main__':
             accus_ours[filename] += [_accu_ours]
             print("ours: %s" % accus_ours[filename])
 
-            # # facloc
-            # pred_exo_idxs_facloc = facloc_pred(timestamps, timestamp_dims, mark, iter)
-            # _accu_facloc = np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idxs_facloc])
-            # accus_facloc[filename] += [_accu_facloc]
-            # print("facloc: %s" % accus_facloc[filename])
-            #
-            # # kmeans
-            # pred_exo_idx_kmeans = kmeans_pred(timestamps, timestamp_dims, mark, iter)
-            # _accu_kmeans = np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idx_kmeans])
-            # accus_kmeans[filename] += [_accu_kmeans]
-            # print("kmeans: %s" % accus_kmeans[filename])
-            #
-            # # PCA
-            # pred_exo_idx_pca = pca_pred(timestamps, timestamp_dims, mark, iter, k=1)
-            # _accu_pca = np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idx_pca])
-            # accus_pca[filename] += [_accu_pca]
-            # print("pca: %s" % accus_pca[filename])
+            # facloc
+            pred_exo_idxs_facloc = facloc_pred(timestamps, timestamp_dims, mark, iter)
+            _accu_facloc = np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idxs_facloc])
+            accus_facloc[filename] += [_accu_facloc]
+            print("facloc: %s" % accus_facloc[filename])
+
+            # kmeans
+            pred_exo_idx_kmeans = kmeans_pred(timestamps, timestamp_dims, mark, iter)
+            _accu_kmeans = np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idx_kmeans])
+            accus_kmeans[filename] += [_accu_kmeans]
+            print("kmeans: %s" % accus_kmeans[filename])
+
+            # PCA
+            pred_exo_idx_pca = pca_pred(timestamps, timestamp_dims, mark, iter, k=1)
+            _accu_pca = np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idx_pca])
+            accus_pca[filename] += [_accu_pca]
+            print("pca: %s" % accus_pca[filename])
 
             # EM
             prex_exo_idx_em = em_pred(timestamps, timestamp_dims, mark, iter, edge, omega, v, n_dim, sentiments, T)
