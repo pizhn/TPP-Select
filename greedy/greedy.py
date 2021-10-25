@@ -136,6 +136,7 @@ def hybrid_greedy(timestamps, timestamp_dims, mark, iters, omega, v, n_dim, T, p
                                                        mat_excition_mark, penalty_mark, sentiments)
             fn[u] = fn_time_u + fn_mark_u
 
+        incr_fn = np.full(size, -np.inf)
         stochastic_mask = np.full(timestamps.size, False)
         remaining = np.setdiff1d(list(range(timestamps.size)), exo_idxs)
         stochastic_mask[np.random.choice(remaining, min(stochastic_size, remaining.size), replace=False)] = True
