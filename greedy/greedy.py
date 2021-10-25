@@ -124,7 +124,6 @@ def hybrid_greedy(timestamps, timestamp_dims, mark, iters, omega, v, n_dim, T, p
     if return_all:
         incr_fns = []
 
-    incr_fn = np.full(size, -np.inf)
     for i in range(iters):
         if verbose:
             print("Iteration %s started.." % i)
