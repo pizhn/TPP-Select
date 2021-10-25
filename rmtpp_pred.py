@@ -2,8 +2,7 @@ import tensorflow as tf
 from tensorflow.contrib.keras import preprocessing
 import tempfile
 from model.non_linear.rmtpp import rmtpp_core
-from func.constants import *
-from predict.common import *
+from func.common import *
 
 pad_sequences = preprocessing.sequence.pad_sequences
 
@@ -19,7 +18,7 @@ def rmtpp_data_process(timestamps, timestamp_dims, mark, pred_exo_order, train_t
     pred_exo_order_train, pred_exo_order_test = get_ranking(pred_exo_order[:test_split_index]), \
                                                 get_ranking(pred_exo_order[test_split_index:])
     train_len, test_len = len(timestamps_train), len(timestamps_test)
-    exo_order_cascade_idx_train, exo_order_cascade_idx_valid, exo_order_cascade_idx_test = [None] * train_len, [None] * test_len
+    exo_order_cascade_idx_train, exo_order_cascade_idx_test = [None] * train_len, [None] * test_len
     timestamps_test -= timestamps_test[0]
     dim = np.unique(timestamp_dims).size
     eventTrain, eventTest = [list() for _ in range(dim)], [list() for _ in range(dim)]
@@ -77,7 +76,7 @@ def rmtpp_data_process(timestamps, timestamp_dims, mark, pred_exo_order, train_t
     return data, train_event_seq, train_time_seq, test_event_seq, test_time_seq, \
            train_event_in_seq, train_event_out_seq, train_time_in_seq, train_time_out_seq, \
            test_event_in_seq, test_event_out_seq, test_time_in_seq, test_time_out_seq, \
-           exo_order_cascade_idx_train, exo_order_cascade_idx_valid, exo_order_cascade_idx_test, \
+           exo_order_cascade_idx_train, exo_order_cascade_idx_test, \
            train_len, test_len
 
 
@@ -119,13 +118,12 @@ def get_endo_mask(cascade, cascade_exo_idx):
     return endo_mask
 
 
-def rmtpp_predict(pred_exo_idxs, timestamps, timestamp_dims, mark, k=1.):
+def rmtpp_predict(pred_exo_idxs, timestamps, timestamp_dims, mark, train_test_ratio, k):
     data, train_event_seq, train_time_seq, test_event_seq, test_time_seq, \
     train_event_in_seq, train_event_out_seq, train_time_in_seq, train_time_out_seq, \
     test_event_in_seq, test_event_out_seq, test_time_in_seq, test_time_out_seq, \
-    exo_order_cascade_idx_train, exo_order_cascade_idx_valid, exo_order_cascade_idx_test, \
-    train_len, test_len = rmtpp_data_process(timestamps, timestamp_dims, mark, pred_exo_idxs, train_test)
-
+    exo_order_cascade_idx_train, exo_order_cascade_idx_test, \
+    train_len, test_len = rmtpp_data_process(timestamps, timestamp_dims, mark, pred_exo_idxs, train_test_ratio)
     train_exo_num = int(train_len * k)
     train_cascade_exo_idx = [exo_order_cascade_idx_train[i] for i in range(train_exo_num)]
     train_cascade_exo_out_idx = [(i[0], i[1] - 1) for i in train_cascade_exo_idx if i[1] > 0]

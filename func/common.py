@@ -1,11 +1,19 @@
 import argparse
 import torch
 import datetime
+import numpy as np
 
 # exo_ratios=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-exo_ratios=[0.1, 0.3, 0.5, 0.7, 0.9]
+exo_ratios = [0.1, 0.3, 0.5, 0.7, 0.9]
 # exo_ratios=[0.1, 0.5, 0.9]
-train_valid_test=[0.6, 0.2, 0.2]
+train_test_ratio = [0.7, 0.3]
+
+
+def get_ranking(order):
+    temp = np.argsort(order)
+    ranks = np.empty_like(temp)
+    ranks[temp] = np.arange(len(order))
+    return ranks
 
 
 def thp_params():
@@ -33,6 +41,8 @@ def thp_params():
 DEFAULT_BATCH_SIZE = 32
 DEFAULT_HIDDEN_SIZE = 16
 DEFAULT_LEARN_RATE = 5e-5
+
+
 def sahp_params():
     args = argparse.Namespace
     args.e = 20

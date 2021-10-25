@@ -5,7 +5,7 @@ from model.non_linear.thp.Main import train_mae
 from model.non_linear.thp.transformer.Models import Transformer
 from model.non_linear.thp import Utils
 from model.non_linear.thp.preprocess.Dataset import get_dataloader
-from func.constants import *
+from func.common import *
 from predict.common import *
 
 pad_sequences = preprocessing.sequence.pad_sequences

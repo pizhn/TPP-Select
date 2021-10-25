@@ -5,14 +5,12 @@ from greedy.greedy import hybrid_greedy
 from params import params_classification
 
 if __name__ == '__main__':
-    # filename = ['BookOrder', 'Club', 'Election', 'Series', 'Verdict']
-    filenames = ['BookOrder']
-
+    filename = ['BookOrder', 'Club', 'Election', 'Series', 'Verdict']
     n_trial = 3
 
     for i in range(n_trial):
         start = time.time()
-        for filename in filenames:
+        for _filename in filename:
             params = params_classification[filename]
             skip_first = params['skip_first']
             stochastic_size = params['stochastic_size']

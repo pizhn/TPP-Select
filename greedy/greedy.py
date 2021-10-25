@@ -7,8 +7,9 @@ from model import time_estimator as time_estimator, mark_estimator as mark_estim
 
 
 # Algorithm 1 that only considers time influence
-def time_greedy(timestamps, timestamp_dims, iters, omega, n_dim, T, penalty_time, edge, stochastic_size=300, verbose=False):
-    if stochastic_size is None or stochastic_size>timestamps.size:
+def time_greedy(timestamps, timestamp_dims, iters, omega, n_dim, T, penalty_time, edge, stochastic_size=300,
+                verbose=False):
+    if stochastic_size is None or stochastic_size > timestamps.size:
         stochastic_size = timestamps.size
     cur_endo_mask = np.full(len(timestamps), True)
     size = len(timestamps)
@@ -52,8 +53,9 @@ def time_greedy(timestamps, timestamp_dims, iters, omega, n_dim, T, penalty_time
 
 
 # Algorithm 1 that only considers mark influence
-def mark_greedy(timestamps, timestamp_dims, mark, iters, v, n_dim, penalty_mark, edge, sentiments, stochastic_size=300, verbose=False):
-    if stochastic_size is None or stochastic_size>timestamps.size:
+def mark_greedy(timestamps, timestamp_dims, mark, iters, v, n_dim, penalty_mark, edge, sentiments, stochastic_size=300,
+                verbose=False):
+    if stochastic_size is None or stochastic_size > timestamps.size:
         stochastic_size = timestamps.size
     cur_endo_mask = np.full(len(timestamps), True)
     size = len(timestamps)
@@ -119,7 +121,8 @@ def hybrid_greedy(timestamps, timestamp_dims, mark, iters, omega, v, n_dim, T, p
                                                    mat_excition_mark, penalty_mark, sentiments)
         fn[u] = fn_time_u + fn_mark_u
     exo_idxs = []
-    incr_fns = []
+    if return_all:
+        incr_fns = []
     for i in range(iters):
         if verbose:
             print("Iteration %s started.." % i)
@@ -141,11 +144,14 @@ def hybrid_greedy(timestamps, timestamp_dims, mark, iters, omega, v, n_dim, T, p
             to_dim = timestamp_dims[j]
             _cur_endo_mask = copy.copy(cur_endo_mask)
             _cur_endo_mask[j] = False
-            _, _fn_endo_time = time_estimator.optimize_exo(_cur_endo_mask, timestamp_dims, to_dim, n_dim, omega, edge, mat_excition_time, penalty_time)
-            _, _fn_endo_mark = mark_estimator.optimize_exo(_cur_endo_mask, timestamp_dims, mark, to_dim, n_dim, edge, mat_excition_mark, penalty_mark, sentiments)
+            _, _fn_endo_time = time_estimator.optimize_exo(_cur_endo_mask, timestamp_dims, to_dim, n_dim, omega, edge,
+                                                           mat_excition_time, penalty_time)
+            _, _fn_endo_mark = mark_estimator.optimize_exo(_cur_endo_mask, timestamp_dims, mark, to_dim, n_dim, edge,
+                                                           mat_excition_mark, penalty_mark, sentiments)
             _fn = _fn_endo_time + _fn_endo_mark
             incr_fn[j] = _fn - fn[to_dim]
-        incr_fns += [incr_fn]
+        if return_all:
+            incr_fns += [incr_fn]
         if skip_first:
             exo_idx = np.argmax(incr_fn[not_first_occurence_dim])
         else:
@@ -155,7 +161,7 @@ def hybrid_greedy(timestamps, timestamp_dims, mark, iters, omega, v, n_dim, T, p
         if verbose:
             end = time.time()
             print("Iteration %s ended.. takes %.2f, selected exogenous message: %s" % (i, end - start, exo_idx))
-    if not return_all:
-        return np.array(exo_idxs)
-    else:
+    if return_all:
         return np.array(exo_idxs), incr_fns
+    else:
+        return np.array(exo_idxs)
