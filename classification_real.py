@@ -18,8 +18,9 @@ if __name__ == '__main__':
     # filenames = ['Club']
     # filenames = ['Verdict']
     # stochastic_size = 20
-    stochastic_size = 100
-    iter = 50
+    stochastic_size = 10
+    n_iter = 50
+    n_trial = 5
 
     accus_ours = {}
     accus_facloc = {}
@@ -31,12 +32,11 @@ if __name__ == '__main__':
         for filename in filenames:
             accu[filename] = []
 
-    n_trial = 5
-    # n_trial = 1
     for i in range(n_trial):
         for filename in filenames:
             param = params_classification[filename]
-            penalty_time, penalty_mark, omega, v = param['penalty_time'], param['penalty_mark'], param['omega'], param['v']
+            penalty_time, penalty_mark, omega, v = param['penalty_time'], param['penalty_mark'], param['omega'], param[
+                'v']
             skip_first = param['skip_first']
             stochastic_size = param['stochastic_size']
 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
             real_exo_idxs = sort_idx[len(timestamps) - fake_num:]
 
             # Our method
-            pred_exo_idxs_ours, incr_fns = hybrid_greedy(timestamps, timestamp_dims, mark, iter, omega, v, n_dim, T,
+            pred_exo_idxs_ours, incr_fns = hybrid_greedy(timestamps, timestamp_dims, mark, n_iter, omega, v, n_dim, T,
                                                          penalty_time, penalty_mark, edge, sentiments,
                                                          stochastic_size=stochastic_size, verbose=True,
                                                          return_all=True, skip_first=skip_first)
@@ -81,25 +81,25 @@ if __name__ == '__main__':
             print("ours: %s" % accus_ours[filename])
 
             # # facloc
-            # pred_exo_idxs_facloc = facloc_pred(timestamps, timestamp_dims, mark, iter)
+            # pred_exo_idxs_facloc = facloc_pred(timestamps, timestamp_dims, mark, n_iter)
             # _accu_facloc = np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idxs_facloc])
             # accus_facloc[filename] += [_accu_facloc]
             # print("facloc: %s" % accus_facloc[filename])
             #
             # # kmeans
-            # pred_exo_idx_kmeans = kmeans_pred(timestamps, timestamp_dims, mark, iter)
+            # pred_exo_idx_kmeans = kmeans_pred(timestamps, timestamp_dims, mark, n_iter)
             # _accu_kmeans = np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idx_kmeans])
             # accus_kmeans[filename] += [_accu_kmeans]
             # print("kmeans: %s" % accus_kmeans[filename])
             #
             # # PCA
-            # pred_exo_idx_pca = pca_pred(timestamps, timestamp_dims, mark, iter, k=1)
+            # pred_exo_idx_pca = pca_pred(timestamps, timestamp_dims, mark, n_iter, k=1)
             # _accu_pca = np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idx_pca])
             # accus_pca[filename] += [_accu_pca]
             # print("pca: %s" % accus_pca[filename])
 
             # EM
-            prex_exo_idx_em = em_pred(timestamps, timestamp_dims, mark, iter, edge, omega, v, n_dim, sentiments, T)
+            prex_exo_idx_em = em_pred(timestamps, timestamp_dims, mark, n_iter, edge, omega, v, n_dim, sentiments, T)
             _accu_em = np.mean([(1 if _ in real_exo_idxs else 0) for _ in prex_exo_idx_em])
             accus_em[filename] += [_accu_em]
             print("em: %s" % accus_em[filename])
@@ -115,8 +115,7 @@ if __name__ == '__main__':
 
     for filename in filenames:
         for method, accus in zip(["ours", "facloc", "kmeans", "pca", "em"],
-                                [accus_ours, accus_facloc, accus_kmeans, accus_pca, accus_em]):
+                                 [accus_ours, accus_facloc, accus_kmeans, accus_pca, accus_em]):
             print("accus_%s: %s,  mean: %s, std: %s" % (method, mean(accus[filename]), sem(accus[filename])))
             print(accus)
             print("--------------------------------------------")
-
