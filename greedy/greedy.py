@@ -101,7 +101,7 @@ def mark_greedy(timestamps, timestamp_dims, mark, iters, v, n_dim, penalty_mark,
 # Algorithm 1 that considers both time and mark influence
 def hybrid_greedy(timestamps, timestamp_dims, mark, iters, omega, v, n_dim, T, penalty_time, penalty_mark, edge,
                   sentiments, stochastic_size=300, verbose=False, return_all=False, skip_first=False):
-    not_first_occurence_dim = [True if d in timestamp_dims[:i] else False for i, d in enumerate(timestamp_dims)]
+    not_first_occurence_dim = np.array([True if d in timestamp_dims[:i] else False for i, d in enumerate(timestamp_dims)])
     if verbose:
         print("Starting greedy.. size=%s, iters=%s" % (len(timestamps), iters))
     if stochastic_size is None:
@@ -139,10 +139,11 @@ def hybrid_greedy(timestamps, timestamp_dims, mark, iters, omega, v, n_dim, T, p
         incr_fn = np.full(size, -np.inf)
         stochastic_mask = np.full(timestamps.size, False)
         remaining = np.setdiff1d(list(range(timestamps.size)), exo_idxs)
-        stochastic_mask[np.random.choice(remaining, min(stochastic_size, remaining.size), replace=False)] = True
+        stochastic_ind = np.random.choice(remaining, min(stochastic_size, remaining.size), replace=False)
+        stochastic_mask[stochastic_ind] = True
 
         for j, q in enumerate(timestamps):
-            if not cur_endo_mask[j] or not stochastic_mask[j]:
+            if not stochastic_mask[j]:
                 continue
             to_dim = timestamp_dims[j]
             _cur_endo_mask = copy.copy(cur_endo_mask)
@@ -160,6 +161,8 @@ def hybrid_greedy(timestamps, timestamp_dims, mark, iters, omega, v, n_dim, T, p
         else:
             exo_idx = np.argmax(incr_fn)
         cur_endo_mask[exo_idx] = False
+        if exo_idx in exo_idxs:
+            print(123)
         exo_idxs += [exo_idx]
         if verbose:
             end = time.time()
