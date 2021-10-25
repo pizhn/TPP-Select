@@ -27,8 +27,8 @@ params_classification = {
         {
             'penalty_time': 5,
             'penalty_mark': 5,
-            'omega': 0.5,
-            'v': 0.5,
+            'omega': 0.1,
+            'v': 0.1,
             'skip_first': False,
             'stochastic_size': 20
         },

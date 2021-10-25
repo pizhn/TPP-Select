@@ -1,12 +1,11 @@
 from tensorflow.contrib.keras import preprocessing
 import torch.nn as nn
 import torch.optim as optim
-from model.non_linear.thp.Main import train_mae
+from model.non_linear.thp.Main import train_with_exo_mae, eval_epoch_mae
 from model.non_linear.thp.transformer.Models import Transformer
 from model.non_linear.thp import Utils
-from model.non_linear.thp.preprocess.Dataset import get_dataloader
+from model.non_linear.thp.preprocess.Dataset import get_masked_dataloader
 from func.common import *
-from predict.common import *
 
 pad_sequences = preprocessing.sequence.pad_sequences
 
@@ -26,35 +25,7 @@ def process_masked_data(timestamps, timestamp_dims, mark, endo_mask, dim):
     return data, np.unique(mark).size
 
 
-def test(exo_num, pred_exo_idxs, timestamps_train, timestamp_dims_train,
-         mark_train, timestamps_test, timestamp_dims_test, mark_test, endo_mask_train, dim, num_types, label):
-    model = train_eval(exo_num, pred_exo_idxs, timestamps_train, \
-                                        timestamp_dims_train, mark_train, \
-                                        timestamps_test, timestamp_dims_test, mark_test, endo_mask_train, dim, \
-                                        num_types, label)
-
-    optimizer = optim.Adam(filter(lambda x: x.requires_grad, model.parameters()),
-                           opt.lr, betas=(0.9, 0.999), eps=1e-05)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, 10, gamma=0.5)
-    if opt.smooth > 0:
-        pred_loss_func = Utils.LabelSmoothingLoss(opt.smooth, num_types, ignore_index=-1)
-    else:
-        pred_loss_func = nn.CrossEntropyLoss(ignore_index=-1, reduction='none')
-    pred_event, true_event, _, _, _, mark_error, time_error = train_mae(model, trainloader, validloader, optimizer,
-                                                                        scheduler, pred_loss_func, opt)
-    return time_error, mark_error
-
-
-def train_eval(k, pred_exo_idxs, timestamps_train, timestamp_dims_train, mark_train, timestamps_valid,
-               timestamp_dims_valid, mark_valid, dim, num_types):
-    exo_num = int(len(timestamps_train * k))
-    exo_idxs = pred_exo_idxs[:exo_num]
-    endo_mask_train = np.full_like(timestamps_train, True)
-    endo_mask_train[exo_idxs] = False
-    train_data, _ = process_masked_data(timestamps_train, timestamp_dims_train, mark_train, endo_mask_train, dim)
-    valid_data, _ = process_masked_data(timestamps_valid, timestamp_dims_valid, mark_valid, endo_mask_train, dim)
-    trainloader = get_dataloader(train_data, opt.batch_size, shuffle=True)
-    validloader = get_dataloader(valid_data, opt.batch_size, shuffle=False)
+def train_with_exo(trainloader, pred_loss_func, num_types):
     model = Transformer(
         num_types=num_types,
         d_model=opt.d_model,
@@ -67,18 +38,46 @@ def train_eval(k, pred_exo_idxs, timestamps_train, timestamp_dims_train, mark_tr
         dropout=opt.dropout,
     )
     model.to(opt.device)
+    optimizer = optim.Adam(filter(lambda x: x.requires_grad, model.parameters()),
+                           opt.lr, betas=(0.9, 0.999), eps=1e-05)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, 10, gamma=0.5)
+    train_with_exo_mae(model, trainloader, optimizer, scheduler, pred_loss_func, opt)
     return model
 
 
-def thp_predict(pred_exo_idxs, timestamps, timestamp_dims, mark, label, k=1.):
-    # process data
-    train_rate, test_rate = train_test
+def thp_predict(pred_exo_idxs, timestamps, timestamp_dims, mark, k=1.):
+    # data and params
+    train_rate, test_rate = train_test_ratio
     test_split_index = int(train_rate * len(timestamps))
     timestamps_train, timestamps_test = timestamps[:test_split_index], timestamps[test_split_index:]
     mark_train, mark_test = mark[:test_split_index], mark[test_split_index:]
     timestamp_dims_train, timestamp_dims_test = timestamp_dims[:test_split_index], timestamp_dims[test_split_index:]
     timestamps_test -= timestamps_test[0]
+
+    exo_num = int(len(timestamps_train) * k)
+    train_exo_idxs = pred_exo_idxs[pred_exo_idxs < test_split_index]
+    exo_idxs = train_exo_idxs[:exo_num]
+    endo_mask_train = np.full_like(timestamps_train, True)
+    endo_mask_train[exo_idxs] = False
     dim = np.unique(timestamp_dims).size
     num_types = np.unique(mark).size
-    return test(k, pred_exo_idxs, timestamps_train, timestamp_dims_train,
-                mark_train, timestamps_test, timestamp_dims_test, mark_test, dim, num_types, label)
+    train_data, _ = process_masked_data(timestamps_train, timestamp_dims_train, mark_train, endo_mask_train, dim)
+    test_data, _ = process_masked_data(timestamps_test, timestamp_dims_test, mark_test, endo_mask_train, dim)
+    # trainloader = get_dataloader(train_data, opt.batch_size, shuffle=True)
+    # testloader = get_dataloader(test_data, opt.batch_size, shuffle=False)
+    trainloader = get_masked_dataloader(train_data, opt.batch_size, shuffle=True)
+    testloader = get_masked_dataloader(test_data, opt.batch_size, shuffle=False)
+
+    if opt.smooth > 0:
+        pred_loss_func = Utils.LabelSmoothingLoss(opt.smooth, num_types, ignore_index=-1)
+    else:
+        pred_loss_func = nn.CrossEntropyLoss(ignore_index=-1, reduction='none')
+
+    num_types = np.unique(mark).size
+    model = train_with_exo(trainloader, pred_loss_func, num_types)
+
+    # evaluation
+    pred_event, true_event, pred_time, true_time, likelihood, mark_error, time_error = \
+        eval_epoch_mae(model, testloader, pred_loss_func, opt)
+
+    return pred_event, true_event, pred_time, true_time, likelihood, mark_error, time_error

@@ -43,19 +43,20 @@ if __name__ == '__main__':
         for file in os.listdir('.'):
             if not file.startswith('%s_greedy_' % _filename):
                 continue
-            if file == 'Club_greedy_1635130780.3244987.pickle':
-                continue
             with open(os.path.join('.', file), 'rb') as handle:
                 pred_exo_idxs = pickle.load(handle)
 
             for _k in k:
-                # rmtpp
-                rmtpp_time_error, rmtpp_mark_error = rmtpp_predict(pred_exo_idxs, timestamps, timestamp_dims,
-                                                                   mark, train_test_ratio, k=_k)
-                result['rmtpp'][_filename][_k]['time'] = rmtpp_time_error
-                result['rmtpp'][_filename][_k]['mark'] = rmtpp_mark_error
+                # # rmtpp
+                # rmtpp_time_error, rmtpp_mark_error = rmtpp_predict(pred_exo_idxs, timestamps, timestamp_dims,
+                #                                                    mark, train_test_ratio, k=_k)
+                # result['rmtpp'][_filename][_k]['time'] = rmtpp_time_error
+                # result['rmtpp'][_filename][_k]['mark'] = rmtpp_mark_error
 
                 # thp
-                thp_time_error, thp_mark_error = thp_predict(pred_exo_idxs, timestamps, timestamp_dims, mark, k=_k)
-                result['thp'][_filename][_k]['time'] = thp_time_error
-                result['thp'][_filename][_k]['mark'] = thp_mark_error
+                _, _, _, _, _, thp_mark_error, thp_time_error = thp_predict(pred_exo_idxs, timestamps,
+                                                                            timestamp_dims, mark, k=_k)
+                result['thp', _filename, file, _k, 'time'] = thp_time_error
+                result['thp', _filename, file, _k, 'mark'] = thp_mark_error
+
+                print(result)

@@ -19,10 +19,7 @@ def get_ranking(order):
 def thp_params():
     opt = argparse.Namespace
     opt.data = 'data/'
-    # opt.epoch = 30
     opt.epoch = 60
-    # opt.epoch = 1
-    # opt.epoch = 1
     opt.batch_size = 16
     opt.d_model = 64
     opt.d_rnn = 256

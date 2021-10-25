@@ -39,6 +39,7 @@ if __name__ == '__main__':
 
             with open('./data/%s.pickle' % filename, 'rb') as handle:
                 timestamps, timestamp_dims, edge, mark = pickle.load(handle)
+
             fake_num = int(0.4 * len(timestamps))
             T = max(timestamps)
             n_dim = len(np.unique(timestamp_dims))
