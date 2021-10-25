@@ -25,7 +25,8 @@ if __name__ == '__main__':
 
     n_trials = 5
     times = {}
-
+    for _frac_exo in frac_exo:
+        times[_frac_exo] = []
 
     for _frac_exo in frac_exo:
         for i in range(n_trials):
@@ -37,53 +38,56 @@ if __name__ == '__main__':
             timestamps, timestamp_dims, true_endo_mask = process_history(history)
             real_exo_idxs = np.where(true_endo_mask == False)[0]
 
-
             real_endo = np.full(len(timestamps), True)
             real_endo[real_exo_idxs] = False
 
-            # ours
-
+            # # ours
             start = time.time()
             pred_exo_idxs_ours = hybrid_greedy(timestamps, timestamp_dims, mark, exo_size, omega, v, dim, T,
                                                penalty_time, penalty_mark, edge, sentiments,
                                                stochastic_size=None, verbose=True, skip_first=False)
-            pred_endo_ours = np.full(len(timestamps), True)
-            pred_endo_ours[pred_exo_idxs_ours] = False
-            accus_ours[_frac_exo] += [np.mean(real_endo == pred_endo_ours)]
+            # pred_endo_ours = np.full(len(timestamps), True)
+            # pred_endo_ours[pred_exo_idxs_ours] = False
+            # accus_ours[_frac_exo] += [np.mean(real_endo == pred_endo_ours)]
+            accus_ours[_frac_exo] += [np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idxs_ours])]
             print("ours:", accus_ours[_frac_exo][-1])
-            times[_frac_exo] = time.time() - start
+            times[_frac_exo] += [time.time() - start]
 
             # facloc
             pred_exo_idxs_facloc = facloc_pred(timestamps, timestamp_dims, mark, exo_size)
-            pred_endo_facloc = np.full(len(timestamps), True)
-            pred_endo_facloc[pred_exo_idxs_facloc] = False
-            accus_facloc[_frac_exo] += [np.mean(real_endo == pred_endo_facloc)]
+            # pred_endo_facloc = np.full(len(timestamps), True)
+            # pred_endo_facloc[pred_exo_idxs_facloc] = False
+            # accus_facloc[_frac_exo] += [np.mean(real_endo == pred_endo_facloc)]
+            accus_facloc[_frac_exo] += [np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idxs_facloc])]
             print("facloc:", accus_facloc[_frac_exo][-1])
 
             # kmeans
             pred_exo_idx_kmeans = kmeans_pred(timestamps, timestamp_dims, mark, exo_size)
-            pred_endo_kmeans = np.full(len(timestamps), True)
-            pred_endo_kmeans[pred_exo_idx_kmeans] = False
-            accus_kmeans[_frac_exo] += [np.mean(real_endo == pred_endo_kmeans)]
+            # pred_endo_kmeans = np.full(len(timestamps), True)
+            # pred_endo_kmeans[pred_exo_idx_kmeans] = False
+            # accus_kmeans[_frac_exo] += [np.mean(real_endo == pred_endo_kmeans)]
+            accus_kmeans[_frac_exo] += [np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idx_kmeans])]
             print("kmeans:", accus_kmeans[_frac_exo][-1])
 
             # PCA
             pred_exo_idx_pca = pca_pred(timestamps, timestamp_dims, mark, exo_size)
-            pred_endo_pca = np.full(len(timestamps), True)
-            pred_endo_pca[pred_exo_idx_kmeans] = False
-            accus_pca[_frac_exo] += [np.mean(real_endo == pred_endo_pca)]
+            # pred_endo_pca = np.full(len(timestamps), True)
+            # pred_endo_pca[pred_exo_idx_pca] = False
+            # accus_pca[_frac_exo] += [np.mean(real_endo == pred_endo_pca)]
+            accus_pca[_frac_exo] += [np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idx_pca])]
             print("pca:", accus_pca[_frac_exo][-1])
 
             # EM
             pred_exo_idx_em = em_pred(timestamps, timestamp_dims, mark, exo_size, edge, omega, v, dim, sentiments, T)
-            pred_endo_em = np.full(len(timestamps), True)
-            pred_endo_em[pred_exo_idx_kmeans] = False
-            accus_em[_frac_exo] += [np.mean(real_endo == pred_endo_em)]
+            # pred_endo_em = np.full(len(timestamps), True)
+            # pred_endo_em[pred_exo_idx_em] = False
+            # accus_em[_frac_exo] += [np.mean(real_endo == pred_endo_em)]
+            accus_em[_frac_exo] += [np.mean([(1 if _ in real_exo_idxs else 0) for _ in pred_exo_idx_em])]
             print("em:", accus_em[_frac_exo][-1])
 
-    print(accus_ours)
-    print(accus_pca)
-    print(accus_em)
-    print(accus_kmeans)
-    print(accus_facloc)
-    print(times)
+    print("ours: %s" % accus_ours)
+    print("pca: %s" % accus_pca)
+    print("em: %s" % accus_em)
+    print("kmeans: %s"% accus_kmeans)
+    print("facloc: %s"% accus_facloc)
+    print("time: %s"% time)

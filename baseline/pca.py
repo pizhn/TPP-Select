@@ -27,19 +27,3 @@ def pca_pred(timestamp, timestamp_dims, mark, size, k=3):
     devs = [deviation(x, pca.explained_variance_, pca.components_) for x in X]
     pred_exo_order = np.argsort(devs)[::-1]
     return pred_exo_order[:size]
-
-
-if __name__ == '__main__':
-
-    filenames = ['BookOrder', 'Club']
-    start = time.time()
-
-    for filename in filenames:
-        print(filename)
-        with open('../../assets/data/%s.pickle' % filename, 'rb') as handle:
-            timestamps, timestamp_dims, _, mark = pickle.load(handle)
-
-        pred_exo_order = PCA_anomaly(timestamps, timestamp_dims, mark)
-
-        with open('PCA_greedy_%s.pickle' % filename, 'wb') as handle:
-            pickle.dump((pred_exo_order, None, None), handle, protocol=pickle.HIGHEST_PROTOCOL)

@@ -1,7 +1,4 @@
-import pickle
-
 from sklearn.cluster import KMeans
-from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
 
 
@@ -16,21 +13,13 @@ def kmeans_pred(timestamps, timestamp_dims, mark, size):
     X = [_ for _ in zip(timestamps, mark, timestamp_dims)]
     kmeans = KMeans(n_clusters=2).fit(X)
     kmeans_y = kmeans.predict(X)
-    left = np.where(kmeans_y == 1)[0]
-    right = np.where(kmeans_y != 1)[0]
-    np.random.shuffle(left)
-    np.random.shuffle(right)
-    return np.concatenate((left, right))[:size]
-
-if __name__ == '__main__':
-
-    filenames = ['BookOrder', 'Club']
-
-    for filename in filenames:
-        with open('../../assets/data/%s.pickle' % filename, 'rb') as handle:
-            timestamps, timestamp_dims, _, mark = pickle.load(handle)
-
-        kmeans_y = Kmeans_anomaly(timestamps, timestamp_dims, mark)
-
-        with open('kmeans_greedy_%s.pickle' % filename, 'wb') as handle:
-            pickle.dump((kmeans_y, None, None), handle, protocol=pickle.HIGHEST_PROTOCOL)
+    c1 = np.where(kmeans_y == 1)[0]
+    c2 = np.where(kmeans_y == 0)[0]
+    c = c1 if c1.size < c2.size else c2
+    if len(c) > size:
+        print("len(c[:size]): %s" % len(c[:size]))
+        return c[:size]
+    else:
+        np.random.shuffle(c2)
+        print("len(np.concatenate([c, c2[:(len(timestamps) - c1.size)]])): %s" % len(np.concatenate([c, c2[:(len(timestamps) - c1.size)]])))
+        return np.concatenate([c, c2[:(len(timestamps) - c1.size)]])

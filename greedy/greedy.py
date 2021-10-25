@@ -97,7 +97,8 @@ def mark_greedy(timestamps, timestamp_dims, mark, iters, v, n_dim, penalty_mark,
 
 
 # Algorithm 1 that considers both time and mark influence
-def hybrid_greedy(timestamps, timestamp_dims, mark, iters, omega, v, n_dim, T, penalty_time, penalty_mark, edge, sentiments, stochastic_size=300, verbose=False, return_all=False, skip_first=False):
+def hybrid_greedy(timestamps, timestamp_dims, mark, iters, omega, v, n_dim, T, penalty_time, penalty_mark, edge,
+                  sentiments, stochastic_size=300, verbose=False, return_all=False, skip_first=False):
     not_first_occurence_dim = [True if d in timestamp_dims[:i] else False for i, d in enumerate(timestamp_dims)]
     if verbose:
         print("Starting greedy.. size=%s, iters=%s" % (len(timestamps), iters))
