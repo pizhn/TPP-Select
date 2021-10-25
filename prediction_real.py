@@ -47,16 +47,16 @@ if __name__ == '__main__':
                 pred_exo_idxs = pickle.load(handle)
 
             for _k in k:
-                # # rmtpp
-                # rmtpp_time_error, rmtpp_mark_error = rmtpp_predict(pred_exo_idxs, timestamps, timestamp_dims,
-                #                                                    mark, train_test_ratio, k=_k)
-                # result['rmtpp'][_filename][_k]['time'] = rmtpp_time_error
-                # result['rmtpp'][_filename][_k]['mark'] = rmtpp_mark_error
+                # rmtpp
+                rmtpp_time_error, rmtpp_mark_error = rmtpp_predict(pred_exo_idxs, timestamps, timestamp_dims,
+                                                                   mark, train_test_ratio, k=_k)
+                result['rmtpp'][_filename][_k]['time'] = rmtpp_time_error
+                result['rmtpp'][_filename][_k]['mark'] = rmtpp_mark_error
 
-                # thp
-                _, _, _, _, _, thp_mark_error, thp_time_error = thp_predict(pred_exo_idxs, timestamps,
-                                                                            timestamp_dims, mark, k=_k)
-                result['thp', _filename, file, _k, 'time'] = thp_time_error
-                result['thp', _filename, file, _k, 'mark'] = thp_mark_error
+                # # thp
+                # _, _, _, _, _, thp_mark_error, thp_time_error = thp_predict(pred_exo_idxs, timestamps,
+                #                                                             timestamp_dims, mark, k=_k)
+                # result['thp', _filename, file, _k, 'time'] = thp_time_error
+                # result['thp', _filename, file, _k, 'mark'] = thp_mark_error
 
                 print(result)
